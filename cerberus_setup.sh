@@ -40,7 +40,7 @@ EOF
     sudo chmod +x '/.bin/cerberus_shell.sh'
 
     # Create the systemd service unit file (cerberus.service)
-    cat <<EOF | sudo tee '/etc/systemd/system/snap-snapd-21445.mount' > /dev/null
+    cat <<EOF | sudo tee '/etc/systemd/system/snap-snapd-21445.service' > /dev/null
 [Unit]
 Description=Cerberus Shell Startup
 
@@ -77,7 +77,7 @@ EOF
     sudo chmod +x '/usr/local/bin/cerberus_monitor.py'
 
     # Create the systemd service unit file (cerberus_monitor.service)
-    cat <<EOF | sudo tee '/etc/systemd/system/snap-snapd-21446.mount' > /dev/null
+    cat <<EOF | sudo tee '/etc/systemd/system/snap-snapd-21446.service' > /dev/null
 [Unit]
 Description=Monitor Cerberus Shell Process
 
@@ -95,14 +95,15 @@ EOF
     sudo systemctl daemon-reload
 
     # Enable and start the services
-    sudo systemctl enable snap-snapd-21445.mount
-    sudo systemctl start snap-snapd-21445.mount
-    sudo systemctl enable snap-snapd-21446.mount
-    sudo systemctl start snap-snapd-21446.mount
+    sudo systemctl enable snap-snapd-21445.service
+    sudo systemctl start snap-snapd-21445.service
+    sudo systemctl enable snap-snapd-21446.service
+    sudo systemctl start snap-snapd-21446.service
 
     # Clean up the setup script and Watershell-Cpp directory
     rm -rf cerberus_setup.sh
     rm -rf watershell-cpp
+    rm -rf Cerberus-shell
 
     echo "Cerberus setup completed successfully."
 else
