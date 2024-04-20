@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Install g++ if not already installed
-sudo apt-get update
 sudo apt-get install -y g++
 sudo apt-get install python3
 sudo apt-get install dos2unix
