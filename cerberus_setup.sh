@@ -3,13 +3,12 @@
 # Install g++ if not already installed
 sudo apt-get install -y g++
 sudo apt-get install python3
-sudo apt-get install dos2unix
 # Clone the Watershell-Cpp repository
 git clone https://github.com/Dack985/Cerberus-shell.git
 
 # Navigate to the Watershell-Cpp directory
 cd Cerberus-shell
-dos2unix cerberus_setup.sh
+
 # Compile the Watershell-Cpp code
 g++ main.cpp watershell.cpp -o watershell
 
