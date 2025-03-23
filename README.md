@@ -14,9 +14,9 @@ g++ main.cpp watershell.cpp -o ${INSERT_BINARY_NAME}
 
 
 
-python3 watershell-cli.py -l <ip_address.txt> -p 10000 -c <command in quotes>
-python3 watershell-cli.py -p 10000 -c <command in quotes>
-python3 watershell-cli.py -p 10000 -i
+- python3 watershell-cli.py -l <ip_address.txt> -p 10000 -c <command in quotes>
+- python3 watershell-cli.py -p 10000 -c <command in quotes>
+- python3 watershell-cli.py -p 10000 -i
 
 example command 
 python3 watershell-cli.py -l team4_ips.txt -p 10000 -c "iptables -A INPUT -p icmp --icmp-type echo-request -j DROP"
